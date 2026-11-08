@@ -13,7 +13,8 @@ Requires Node 24: `nvm use`
 - `npm run lint`: ESLint
 - `npm run format` / `npm run format:check`: Prettier
 - `npm test`: unit tests (Vitest)
-- `npm run test:e2e`: end-to-end tests (Playwright)
+- `npm run test:watch`: unit tests in watch mode
+- `npm run test:e2e`: end-to-end tests (Playwright); first run `npx playwright install chromium` once
 
 ## Docs
 
