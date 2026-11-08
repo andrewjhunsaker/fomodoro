@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { findViolations, isTestFile, type FileChange } from './test-integrity.ts';
 
-const change = (path: string, base: string | null, head: string | null): FileChange => ({ path, base, head });
+const change = (path: string, base: string | null, head: string | null): FileChange => ({
+  path,
+  base,
+  head,
+});
 
 describe('isTestFile', () => {
   it('matches unit, spec, e2e and snapshot files', () => {
@@ -17,7 +21,9 @@ describe('isTestFile', () => {
 
 describe('findViolations', () => {
   it('allows new test files', () => {
-    expect(findViolations([change('src/a.test.ts', null, "it('a', () => { expect(1).toBe(1) })")])).toEqual([]);
+    expect(
+      findViolations([change('src/a.test.ts', null, "it('a', () => { expect(1).toBe(1) })")]),
+    ).toEqual([]);
   });
 
   it('allows adding tests and assertions', () => {
@@ -51,7 +57,12 @@ describe('findViolations', () => {
 
   it('flags newly added skip, only, todo, and x-prefixed tests', () => {
     const base = "it('a', () => { expect(1).toBe(1) })";
-    for (const added of ["it.skip('b', () => {})", "test.only('b', () => {})", "it.todo('b')", "xit('b', () => {})"]) {
+    for (const added of [
+      "it.skip('b', () => {})",
+      "test.only('b', () => {})",
+      "it.todo('b')",
+      "xit('b', () => {})",
+    ]) {
       const result = findViolations([change('src/a.test.ts', base, base + '\n' + added)]);
       expect(result.map((v) => v.reason)).toContain('skip/only/todo markers increased from 0 to 1');
     }

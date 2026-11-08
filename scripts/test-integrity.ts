@@ -6,7 +6,8 @@ export type Violation = { path: string; reason: string };
 const TEST_FILE = /(\.(test|spec)\.[cm]?[jt]sx?$)|(^e2e\/.*\.[jt]s$)|(\.snap$)/;
 const CASE = /\b(?:it|test)(?:\.each\([^)]*\))?\s*\(/g;
 const ASSERTION = /\bexpect(?:\.soft)?\s*\(/g;
-const MARKER = /\b(?:it|test|describe)\.(?:skip|only|todo|fixme)\b|\b(?:xit|xtest|xdescribe|fit|fdescribe)\s*\(/g;
+const MARKER =
+  /\b(?:it|test|describe)\.(?:skip|only|todo|fixme)\b|\b(?:xit|xtest|xdescribe|fit|fdescribe)\s*\(/g;
 
 export const isTestFile = (path: string) => TEST_FILE.test(path);
 const count = (text: string, re: RegExp) => text.match(re)?.length ?? 0;
@@ -32,7 +33,10 @@ export function findViolations(changes: FileChange[]): Violation[] {
       const before = count(base, re);
       const after = count(head, re);
       if (bad === 'decrease' ? after < before : after > before) {
-        violations.push({ path, reason: `${label} ${bad === 'decrease' ? 'decreased' : 'increased'} from ${before} to ${after}` });
+        violations.push({
+          path,
+          reason: `${label} ${bad === 'decrease' ? 'decreased' : 'increased'} from ${before} to ${after}`,
+        });
       }
     }
   }
@@ -45,7 +49,10 @@ function git(args: string[]): string {
 
 function show(ref: string, path: string): string | null {
   try {
-    return git(['show', `${ref}:${path}`]);
+    return execFileSync('git', ['show', `${ref}:${path}`], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
   } catch {
     return null;
   }
@@ -56,7 +63,11 @@ function main() {
   const labels: string[] = JSON.parse(process.env.PR_LABELS ?? '[]');
   const mergeBase = git(['merge-base', baseRef, 'HEAD']).trim();
   const paths = git(['diff', '--name-only', mergeBase, 'HEAD']).split('\n').filter(Boolean);
-  const changes = paths.map((path) => ({ path, base: show(mergeBase, path), head: show('HEAD', path) }));
+  const changes = paths.map((path) => ({
+    path,
+    base: show(mergeBase, path),
+    head: show('HEAD', path),
+  }));
   const violations = findViolations(changes);
 
   if (violations.length === 0) {
@@ -68,7 +79,9 @@ function main() {
     console.log('test-integrity: changes approved by label test-change-approved');
     return;
   }
-  console.error('test-integrity: existing tests were weakened. Fix the code instead, or ask Andrew to review and add the test-change-approved label.');
+  console.error(
+    'test-integrity: existing tests were weakened. Fix the code instead, or ask Andrew to review and add the test-change-approved label.',
+  );
   process.exit(1);
 }
 
