@@ -16,3 +16,4 @@ logs
 test-results/
 playwright-report/
 reports/
+dev-dist
