@@ -124,7 +124,7 @@ Principles are in `docs/learning/ux-primer.pdf`. The binding rules are:
 - **Status at a glance.** Progress ring, large tabular digits, the block name as text, cycle dots (e.g. ●●○○), and "Next: short break, 5 min". Remaining time also appears in the document title.
 - **Ambient color by mode.** Warm tint during focus, cool tint during breaks, with separate light and dark palettes. Color is never the only signal; the block name is always shown.
 - **Calm tone.** Gentle chime, short notification copy, no streaks or guilt.
-- **Accessibility.** WCAG 2.2 AA contrast; touch targets ≥ 44 pt; full keyboard support (Space = start/pause); block changes announced through an ARIA live region; honors `prefers-reduced-motion` and `prefers-color-scheme`.
+- **Accessibility.** WCAG 2.2 AA contrast; touch targets ≥ 44 pt (Apple's default control size, adopted here as our minimum; HIG's own minimum is 28 pt); full keyboard support (Space = start/pause); block changes announced through an ARIA live region; honors `prefers-reduced-motion` and `prefers-color-scheme`.
 - Built with Tailwind and shadcn/ui; colors and spacing defined as design tokens.
 
 ## 5. Architecture
