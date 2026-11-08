@@ -1,0 +1,7 @@
+dist
+coverage
+reports
+playwright-report
+test-results
+package-lock.json
+docs/**/*.pdf
