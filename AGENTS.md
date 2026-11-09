@@ -6,7 +6,7 @@ A personal Pomodoro PWA (React + Vite + TypeScript; Supabase from M2; Cloudflare
 
 1. Read `docs/STATUS.md` (current state) and `docs/process/PDLC.md` (how we work).
 2. Work on exactly one issue. Its plan is in `docs/plans/`.
-3. Use Node 24: `source ~/.nvm/nvm.sh && nvm use`. Launch Claude Code from a shell where `nvm use` already selected Node 24: the `.claude/hooks/*.ts` files are run by `node` (Node 18 can't run them).
+3. Use Node 24: `source ~/.nvm/nvm.sh && nvm use`. Claude Code hooks go through `.claude/hooks/run.sh`, which finds Node 24 on PATH or in nvm; if none is installed, guard hooks block every Bash/Edit call until you run `nvm install 24`.
 
 ## Commands
 

@@ -860,7 +860,7 @@ _Updated at the end of every working session and when a PR merges. Keep under 60
 
 ## Waiting on Andrew
 
-- Branch-protection decision (GitHub Free doesn't enforce it on private repos)
+- Branch-protection decision (repo is public, so it can be enforced; applied in Task 10)
 - Cloudflare Pages connection (dashboard step)
 
 ## Known issues / risks
@@ -897,7 +897,7 @@ Retro lines are consolidated into PDLC.md every 5 PRs; mark consolidated entries
 
 ## 2026-11-08 — Repo + scaffold (Tasks 1–2, bootstrap on main)
 
-**Changed:** Private GitHub repo; Vite React PWA with a tested hello screen.
+**Changed:** GitHub repo; Vite React PWA with a tested hello screen.
 **Notes:** Node 24 pinned in .nvmrc (nvm default on this machine is 18).
 **Retro:** _fill in_
 
