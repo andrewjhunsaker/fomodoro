@@ -7,17 +7,16 @@ _Updated at the end of every working session and when a PR merges. Keep under 60
 
 ## In progress
 
-- Task 5: dev log, status, ADRs, PDLC, learning trackers, PR checks (this PR)
+- Task 6: GitHub Actions CI with all gates (this PR, stacked on #11)
 
 ## Next up
 
-- Task 6: CI workflow
 - Task 7: Claude guardrails (settings + hooks)
 - Task 8: agent instructions (AGENTS.md, CLAUDE.md) and pre-commit
 
 ## Waiting on Andrew
 
-- Merge the stacked PRs in order: #9 (Task 3), #10 (Task 4), then this PR
+- Merge the stacked PRs in order: #9 (Task 3), #10 (Task 4), #11 (Task 5), then this PR
 - Cloudflare Pages connection (Task 9, dashboard step)
 - Install the Claude GitHub app for AI review (Task 10)
 
@@ -33,4 +32,4 @@ _Updated at the end of every working session and when a PR merges. Keep under 60
 
 ## Recently done
 
-- Tasks 1–4: repo, scaffold, lint + e2e (PR #9), test-integrity gate (PR #10); #9 and #10 await Andrew's merge, stacked
+- Tasks 1–4: repo, scaffold, lint + e2e (PR #9), test-integrity gate (PR #10), Task 5 docs + PR checks (PR #11); all await Andrew's merge, stacked
