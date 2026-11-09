@@ -7,21 +7,21 @@ _Updated at the end of every working session and when a PR merges. Keep under 60
 
 ## In progress
 
-- Task 7: Claude guardrails — settings, guard hooks, plugin allowlist (this PR, stacked on #12)
+- Task 8: AGENTS.md, CLAUDE.md, Husky pre-commit (this PR, stacked on #14)
 
 ## Next up
 
-- Task 8: agent instructions (AGENTS.md, CLAUDE.md) and pre-commit
+- Task 9: Cloudflare Pages (human steps), then Task 10
 
 ## Waiting on Andrew
 
-- Merge the stacked PRs in order: #9 (Task 3), #10 (Task 4), #11 (Task 5), #12 (Task 6), then this PR
+- Merge the stacked PRs in order: #9 (Task 3), #10 (Task 4), #11 (Task 5), #12 (Task 6), #14 (Task 7), then this PR
 - Cloudflare Pages connection (Task 9, dashboard step)
 - Install the Claude GitHub app for AI review (Task 10)
 
 ## Known issues / risks
 
-- Claude Code hooks run `.ts` with whatever `node` is on PATH: start Claude Code from a shell where `nvm use` picked Node 24 (to be documented in AGENTS.md, Task 8).
+- Claude Code hooks run `.ts` with whatever `node` is on PATH: start Claude Code from a shell where `nvm use` picked Node 24 (documented in AGENTS.md).
 
 - Branch protection: the repo is public, so it will be applied in Task 10 (until then nothing blocks a merge).
 - TypeScript is pinned to ~6.0 because typescript-eslint doesn't support TS 7 yet; revisit later.
