@@ -31,6 +31,7 @@ describe('evaluateCommand', () => {
     'npm test',
     'cat .env.example',
     'git status',
+    'node -e "console.log(process.env.HOME)"',
   ];
   for (const cmd of allowed) {
     it(`allows: ${cmd}`, () => {
