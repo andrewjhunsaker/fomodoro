@@ -32,9 +32,9 @@ describe('findViolations', () => {
     expect(findViolations([change('src/a.test.ts', base, head)])).toEqual([]);
   });
 
-  it('flags a deleted test file', () => {
+  it('flags a deleted test file (its cases leave the total)', () => {
     expect(findViolations([change('src/a.test.ts', "it('a', () => {})", null)])).toEqual([
-      { path: 'src/a.test.ts', reason: 'test file deleted' },
+      { reason: 'test cases decreased from 1 to 0 across changed test files' },
     ]);
   });
 
@@ -42,8 +42,7 @@ describe('findViolations', () => {
     const base = "it('a', () => { expect(1).toBe(1) })\nit('b', () => { expect(1).toBe(1) })";
     const head = "it('a', () => { expect(1).toBe(1); expect(2).toBe(2) })";
     expect(findViolations([change('src/a.test.ts', base, head)])).toContainEqual({
-      path: 'src/a.test.ts',
-      reason: 'test cases decreased from 2 to 1',
+      reason: 'test cases decreased from 2 to 1 across changed test files',
     });
   });
 
@@ -51,7 +50,7 @@ describe('findViolations', () => {
     const base = "it('a', () => { expect(1).toBe(1); expect(2).toBe(2) })";
     const head = "it('a', () => { expect(1).toBe(1) })";
     expect(findViolations([change('src/a.test.ts', base, head)])).toEqual([
-      { path: 'src/a.test.ts', reason: 'assertions decreased from 2 to 1' },
+      { reason: 'assertions decreased from 2 to 1 across changed test files' },
     ]);
   });
 
@@ -64,7 +63,9 @@ describe('findViolations', () => {
       "xit('b', () => {})",
     ]) {
       const result = findViolations([change('src/a.test.ts', base, base + '\n' + added)]);
-      expect(result.map((v) => v.reason)).toContain('skip/only/todo markers increased from 0 to 1');
+      expect(result.map((v) => v.reason)).toContain(
+        'skip/only/todo markers increased from 0 to 1 across changed test files',
+      );
     }
   });
 
@@ -72,6 +73,59 @@ describe('findViolations', () => {
     expect(findViolations([change('src/__snapshots__/a.test.ts.snap', 'old', 'new')])).toEqual([
       { path: 'src/__snapshots__/a.test.ts.snap', reason: 'snapshot changed' },
     ]);
+  });
+
+  it('allows splitting a file in two', () => {
+    const base = "it('a', () => { expect(1).toBe(1) })\nit('b', () => { expect(2).toBe(2) })";
+    expect(
+      findViolations([
+        change('src/a.test.ts', base, "it('a', () => { expect(1).toBe(1) })"),
+        change('src/b.test.ts', null, "it('b', () => { expect(2).toBe(2) })"),
+      ]),
+    ).toEqual([]);
+  });
+
+  it('allows moving a case to another file', () => {
+    const a = "it('a', () => { expect(1).toBe(1) })";
+    const b = "it('b', () => { expect(2).toBe(2) })";
+    expect(
+      findViolations([change('src/a.test.ts', a + '\n' + b, a), change('src/b.test.ts', '', b)]),
+    ).toEqual([]);
+  });
+
+  it('flags a rename to a non-test file (delete + add)', () => {
+    const src = "it('a', () => { expect(1).toBe(1) })";
+    const reasons = findViolations([
+      change('src/a.test.ts', src, null),
+      change('src/a.ts', null, src),
+    ]).map((v) => v.reason);
+    expect(reasons).toContain('test cases decreased from 1 to 0 across changed test files');
+  });
+
+  it('flags a commented-out test', () => {
+    const base = "it('a', () => { expect(1).toBe(1) })";
+    const head = "// it('a', () => { expect(1).toBe(1) })";
+    expect(findViolations([change('src/a.test.ts', base, head)]).length).toBeGreaterThan(0);
+  });
+
+  it('flags a block-commented test', () => {
+    const base = "it('a', () => { expect(1).toBe(1) })";
+    const head = "/* it('a', () => { expect(1).toBe(1) }) */";
+    expect(findViolations([change('src/a.test.ts', base, head)]).length).toBeGreaterThan(0);
+  });
+
+  it('flags it.concurrent.skip and describe.skipIf', () => {
+    const base = "it.concurrent('a', () => { expect(1).toBe(1) })";
+    for (const head of [
+      "it.concurrent.skip('a', () => { expect(1).toBe(1) })",
+      base + "\ndescribe.skipIf(true)('b', () => {})",
+      base + "\ntest.describe.skip('b', () => {})",
+      base + "\nit.runIf(false)('b', () => {})",
+    ]) {
+      expect(findViolations([change('src/a.test.ts', base, head)]).map((v) => v.reason)).toContain(
+        'skip/only/todo markers increased from 0 to 1 across changed test files',
+      );
+    }
   });
 
   it('ignores non-test files', () => {
