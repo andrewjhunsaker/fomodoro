@@ -20,7 +20,7 @@ Idea → Spec (Andrew approves) → Plan → Issue → Branch → TDD build → 
 
 ## Gates (blocking unless noted)
 
-- Typecheck, lint, unit/component tests, build, Playwright e2e (Chromium), gitleaks, npm audit (high).
+- Typecheck, lint, format:check (Prettier), unit/component tests, build, Playwright e2e (Chromium), gitleaks, npm audit (high).
 - test-integrity: no weakened tests without the `test-change-approved` label (Andrew only).
 - pr-checks: dev-log entry present (or `no-log`), this file ≤ 80 lines; PR size warning (advisory).
 - AI review: advisory.

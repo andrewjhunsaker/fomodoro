@@ -20,4 +20,4 @@ Iteration 1 is split into milestones. Each one ends in working, tested, deployed
 - M0 first is a _walking skeleton_ (Alistair Cockburn): the thinnest end-to-end slice, from commit to deployed app, before any features. Every later PR then runs through real gates from day one.
 - M1 delivers something you can use daily before any backend exists, and it builds the engine that everything else depends on.
 - M2–M4 add the backend in order of dependency: accounts before pushes (pushes need a user), pushes before handoff (handoff moves pushes).
-- After each milestone: a retro entry in `docs/process/log/`, and a PDLC consolidation every 5 merged PRs.
+- After each milestone: a retro entry in `docs/log/`, and a PDLC consolidation every 5 merged PRs.
