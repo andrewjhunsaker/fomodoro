@@ -25,6 +25,7 @@ export default tseslint.config(
     rules: {
       'vitest/no-disabled-tests': 'error',
       'vitest/no-focused-tests': 'error',
+      'vitest/no-commented-out-tests': 'error',
       'vitest/expect-expect': 'error',
       'vitest/valid-expect': 'error',
     },
