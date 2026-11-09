@@ -23,25 +23,25 @@
 
 ## File map
 
-| Path | Responsibility |
-|---|---|
-| `.nvmrc`, `package.json`, `vite.config.ts`, `tsconfig*.json`, `index.html` | App and toolchain config |
-| `src/main.tsx`, `src/App.tsx`, `src/App.test.tsx`, `src/test-setup.ts` | Hello screen and its test |
-| `public/logo.svg`, generated icons | PWA icons |
-| `e2e/smoke.spec.ts`, `playwright.config.ts` | End-to-end smoke test |
-| `eslint.config.js`, `.prettierrc.json` | Lint and format rules (incl. no skipped/focused tests) |
-| `scripts/test-integrity.ts` (+ `.test.ts`) | CI gate: blocks weakened tests unless labeled |
-| `scripts/pr-checks.ts` (+ `.test.ts`) | CI gate: log entry present, PDLC.md ≤ 80 lines, PR size warning |
-| `.github/workflows/ci.yml` | All CI jobs |
-| `.github/pull_request_template.md` | PR checklist |
-| `.claude/settings.json` | Permissions, hooks, plugin allowlist |
-| `.claude/hooks/*.ts` (+ `.test.ts`) | Guard bash, guard test edits, lint on edit, verify on stop, load status on start |
-| `.husky/pre-commit`, lint-staged config | Local pre-commit gate |
-| `AGENTS.md`, `CLAUDE.md` | Agent instructions (advisory layer) |
-| `docs/process/PDLC.md` | Current process (≤ 80 lines) |
-| `docs/STATUS.md` | Current state snapshot for handoff |
-| `docs/log/2026-11.md` | Append-only dev log + retro |
-| `docs/decisions/NNNN-*.md` | Architecture Decision Records |
+| Path                                                                       | Responsibility                                                                   |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `.nvmrc`, `package.json`, `vite.config.ts`, `tsconfig*.json`, `index.html` | App and toolchain config                                                         |
+| `src/main.tsx`, `src/App.tsx`, `src/App.test.tsx`, `src/test-setup.ts`     | Hello screen and its test                                                        |
+| `public/logo.svg`, generated icons                                         | PWA icons                                                                        |
+| `e2e/smoke.spec.ts`, `playwright.config.ts`                                | End-to-end smoke test                                                            |
+| `eslint.config.js`, `.prettierrc.json`                                     | Lint and format rules (incl. no skipped/focused tests)                           |
+| `scripts/test-integrity.ts` (+ `.test.ts`)                                 | CI gate: blocks weakened tests unless labeled                                    |
+| `scripts/pr-checks.ts` (+ `.test.ts`)                                      | CI gate: log entry present, PDLC.md ≤ 80 lines, PR size warning                  |
+| `.github/workflows/ci.yml`                                                 | All CI jobs                                                                      |
+| `.github/pull_request_template.md`                                         | PR checklist                                                                     |
+| `.claude/settings.json`                                                    | Permissions, hooks, plugin allowlist                                             |
+| `.claude/hooks/*.ts` (+ `.test.ts`)                                        | Guard bash, guard test edits, lint on edit, verify on stop, load status on start |
+| `.husky/pre-commit`, lint-staged config                                    | Local pre-commit gate                                                            |
+| `AGENTS.md`, `CLAUDE.md`                                                   | Agent instructions (advisory layer)                                              |
+| `docs/process/PDLC.md`                                                     | Current process (≤ 80 lines)                                                     |
+| `docs/STATUS.md`                                                           | Current state snapshot for handoff                                               |
+| `docs/log/2026-11.md`                                                      | Append-only dev log + retro                                                      |
+| `docs/decisions/NNNN-*.md`                                                 | Architecture Decision Records                                                    |
 
 ---
 
@@ -81,6 +81,7 @@ Expected: `PUBLIC main`
 ### Task 2: Scaffold the app with a tested hello screen (bootstrap, on `main`)
 
 **Files:**
+
 - Create: `.nvmrc`, Vite scaffold files, `src/App.tsx`, `src/App.test.tsx`, `src/test-setup.ts`, `vitest.config.ts`, `public/logo.svg`
 - Modify: `package.json`, `vite.config.ts`, `index.html`
 
@@ -230,7 +231,12 @@ export default defineConfig({
           { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
           { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          {
+            src: 'maskable-icon-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
         ],
       },
     }),
@@ -266,6 +272,7 @@ git push
 Issue: "M0: lint rules, Prettier, Playwright smoke test". Branch: `m0/3-lint-e2e`.
 
 **Files:**
+
 - Modify: `eslint.config.js`, `package.json`
 - Create: `.prettierrc.json`, `.prettierignore`, `playwright.config.ts`, `e2e/smoke.spec.ts`
 
@@ -399,7 +406,10 @@ test('home page shows the app name', async ({ page }) => {
 
 test('page links a web app manifest', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href', /manifest\.webmanifest$/);
+  await expect(page.locator('link[rel="manifest"]')).toHaveAttribute(
+    'href',
+    /manifest\.webmanifest$/,
+  );
 });
 ```
 
@@ -426,6 +436,7 @@ Andrew reviews and merges.
 Issue: "M0: CI gate that blocks weakened tests". Branch: `m0/4-test-integrity`.
 
 **Files:**
+
 - Create: `scripts/test-integrity.ts`, `scripts/test-integrity.test.ts`
 
 The pure function `findViolations` compares each test file's base and head contents. The CLI gathers contents from git and decides pass/fail using the PR labels. Regex counting is a heuristic: it catches the common ways tests get weakened (deleting cases, deleting assertions, adding skips, editing snapshots), not every possible one. Stryker (M1) and human review cover the rest.
@@ -438,7 +449,11 @@ The pure function `findViolations` compares each test file's base and head conte
 import { describe, expect, it } from 'vitest';
 import { findViolations, isTestFile, type FileChange } from './test-integrity.ts';
 
-const change = (path: string, base: string | null, head: string | null): FileChange => ({ path, base, head });
+const change = (path: string, base: string | null, head: string | null): FileChange => ({
+  path,
+  base,
+  head,
+});
 
 describe('isTestFile', () => {
   it('matches unit, spec, e2e and snapshot files', () => {
@@ -454,7 +469,9 @@ describe('isTestFile', () => {
 
 describe('findViolations', () => {
   it('allows new test files', () => {
-    expect(findViolations([change('src/a.test.ts', null, "it('a', () => { expect(1).toBe(1) })")])).toEqual([]);
+    expect(
+      findViolations([change('src/a.test.ts', null, "it('a', () => { expect(1).toBe(1) })")]),
+    ).toEqual([]);
   });
 
   it('allows adding tests and assertions', () => {
@@ -488,7 +505,12 @@ describe('findViolations', () => {
 
   it('flags newly added skip, only, todo, and x-prefixed tests', () => {
     const base = "it('a', () => { expect(1).toBe(1) })";
-    for (const added of ["it.skip('b', () => {})", "test.only('b', () => {})", "it.todo('b')", "xit('b', () => {})"]) {
+    for (const added of [
+      "it.skip('b', () => {})",
+      "test.only('b', () => {})",
+      "it.todo('b')",
+      "xit('b', () => {})",
+    ]) {
       const result = findViolations([change('src/a.test.ts', base, base + '\n' + added)]);
       expect(result.map((v) => v.reason)).toContain('skip/only/todo markers increased from 0 to 1');
     }
@@ -526,7 +548,8 @@ export type Violation = { path: string; reason: string };
 const TEST_FILE = /(\.(test|spec)\.[cm]?[jt]sx?$)|(^e2e\/.*\.[jt]s$)|(\.snap$)/;
 const CASE = /\b(?:it|test)(?:\.each\([^)]*\))?\s*\(/g;
 const ASSERTION = /\bexpect(?:\.soft)?\s*\(/g;
-const MARKER = /\b(?:it|test|describe)\.(?:skip|only|todo|fixme)\b|\b(?:xit|xtest|xdescribe|fit|fdescribe)\s*\(/g;
+const MARKER =
+  /\b(?:it|test|describe)\.(?:skip|only|todo|fixme)\b|\b(?:xit|xtest|xdescribe|fit|fdescribe)\s*\(/g;
 
 export const isTestFile = (path: string) => TEST_FILE.test(path);
 const count = (text: string, re: RegExp) => text.match(re)?.length ?? 0;
@@ -552,7 +575,10 @@ export function findViolations(changes: FileChange[]): Violation[] {
       const before = count(base, re);
       const after = count(head, re);
       if (bad === 'decrease' ? after < before : after > before) {
-        violations.push({ path, reason: `${label} ${bad === 'decrease' ? 'decreased' : 'increased'} from ${before} to ${after}` });
+        violations.push({
+          path,
+          reason: `${label} ${bad === 'decrease' ? 'decreased' : 'increased'} from ${before} to ${after}`,
+        });
       }
     }
   }
@@ -576,7 +602,11 @@ function main() {
   const labels: string[] = JSON.parse(process.env.PR_LABELS ?? '[]');
   const mergeBase = git(['merge-base', baseRef, 'HEAD']).trim();
   const paths = git(['diff', '--name-only', mergeBase, 'HEAD']).split('\n').filter(Boolean);
-  const changes = paths.map((path) => ({ path, base: show(mergeBase, path), head: show('HEAD', path) }));
+  const changes = paths.map((path) => ({
+    path,
+    base: show(mergeBase, path),
+    head: show('HEAD', path),
+  }));
   const violations = findViolations(changes);
 
   if (violations.length === 0) {
@@ -588,7 +618,9 @@ function main() {
     console.log('test-integrity: changes approved by label test-change-approved');
     return;
   }
-  console.error('test-integrity: existing tests were weakened. Fix the code instead, or ask Andrew to review and add the test-change-approved label.');
+  console.error(
+    'test-integrity: existing tests were weakened. Fix the code instead, or ask Andrew to review and add the test-change-approved label.',
+  );
   process.exit(1);
 }
 
@@ -621,6 +653,7 @@ gh pr create --fill
 Issue: "M0: dev log, STATUS.md, ADRs, PDLC.md, PR checks". Branch: `m0/5-docs-pr-checks`.
 
 **Files:**
+
 - Create: `docs/STATUS.md`, `docs/log/2026-11.md`, `docs/process/PDLC.md`, `docs/decisions/0001-record-architecture-decisions.md`, `docs/decisions/0002-push-scheduler.md`, `docs/decisions/0003-single-active-device.md`, `docs/decisions/0004-signed-out-defaults-only.md`, `docs/decisions/0005-design-authority.md`, `docs/learning/README.md`, `docs/learning/CONCEPTS.md`, `.github/pull_request_template.md`, `scripts/pr-checks.ts`, `scripts/pr-checks.test.ts`
 
 - [ ] **Step 1: Write the failing tests for PR checks**
@@ -654,10 +687,20 @@ describe('checkPdlc', () => {
 
 describe('sizeWarning', () => {
   it('ignores lockfiles and PDFs', () => {
-    expect(sizeWarning([{ path: 'package-lock.json', changed: 5000 }, { path: 'docs/learning/a.pdf', changed: 900 }])).toBeNull();
+    expect(
+      sizeWarning([
+        { path: 'package-lock.json', changed: 5000 },
+        { path: 'docs/learning/a.pdf', changed: 900 },
+      ]),
+    ).toBeNull();
   });
   it('warns above 400 changed lines', () => {
-    expect(sizeWarning([{ path: 'src/a.ts', changed: 300 }, { path: 'src/b.ts', changed: 101 }])).toMatch(/401/);
+    expect(
+      sizeWarning([
+        { path: 'src/a.ts', changed: 300 },
+        { path: 'src/b.ts', changed: 101 },
+      ]),
+    ).toMatch(/401/);
   });
   it('stays quiet at 400', () => {
     expect(sizeWarning([{ path: 'src/a.ts', changed: 400 }])).toBeNull();
@@ -696,7 +739,9 @@ export function checkPdlc(lineCount: number): string | null {
 }
 
 export function sizeWarning(files: { path: string; changed: number }[]): string | null {
-  const total = files.filter((f) => !SIZE_IGNORED.test(f.path)).reduce((sum, f) => sum + f.changed, 0);
+  const total = files
+    .filter((f) => !SIZE_IGNORED.test(f.path))
+    .reduce((sum, f) => sum + f.changed, 0);
   return total > PR_SIZE_WARNING
     ? `This PR changes ${total} lines (excluding lockfiles and binaries). Reviews are most effective under ~${PR_SIZE_WARNING}; consider splitting.`
     : null;
@@ -716,7 +761,13 @@ function main() {
     });
 
   const pdlcLines = readFileSync('docs/process/PDLC.md', 'utf8').trimEnd().split('\n').length;
-  const errors = [checkLog(numstat.map((f) => f.path), labels), checkPdlc(pdlcLines)].filter((e) => e !== null);
+  const errors = [
+    checkLog(
+      numstat.map((f) => f.path),
+      labels,
+    ),
+    checkPdlc(pdlcLines),
+  ].filter((e) => e !== null);
   const warning = sizeWarning(numstat);
 
   if (warning) console.log(`::warning::${warning}`);
@@ -743,19 +794,23 @@ Expected: all pass.
 Rules cite the log entry or PR that justified them: (→ log/YYYY-MM #PRn).
 
 ## Flow
+
 Idea → Spec (Andrew approves) → Plan → Issue → Branch → TDD build → PR → CI + AI review → Andrew merges → Log entry → STATUS update
 
 ## Specs, plans, issues
+
 - Specs: `docs/specs/`. Milestone plans: `docs/plans/`. One task = one issue = one branch = one PR.
 - Significant or hard-to-reverse decisions get an ADR in `docs/decisions/`.
 
 ## Branches and PRs
+
 - Branch `m<milestone>/<issue>-<slug>`, short-lived (merge within ~1 day of work).
 - PRs aim for < 400 changed lines; CI warns above that.
 - Each PR opens with test-only commits that fail, then implementation commits.
 - Only Andrew merges.
 
 ## Gates (blocking unless noted)
+
 - Typecheck, lint, unit/component tests, build, Playwright e2e (Chromium), gitleaks, npm audit (high).
 - test-integrity: no weakened tests without the `test-change-approved` label (Andrew only).
 - pr-checks: dev-log entry present (or `no-log`), this file ≤ 80 lines; PR size warning (advisory).
@@ -763,16 +818,19 @@ Idea → Spec (Andrew approves) → Plan → Issue → Branch → TDD build → 
 - From M1: Stryker mutation score on `src/engine` must not drop below main.
 
 ## Testing
+
 - Never weaken a test to make code pass. Fix the code, or stop and ask.
 - Test behavior users see, not implementation details.
 
 ## Logging and handoff
+
 - Every PR adds an entry to `docs/log/<YYYY-MM>.md` (template at the top of that file).
 - `docs/STATUS.md` is the current snapshot. Update it at the end of every working session and when a PR merges.
 - Milestone end: a milestone summary entry in the log + a short retro.
 - Every 5 merged PRs: consolidate retro notes into this file (Andrew approves the edits), mark those entries consolidated.
 
 ## Working with Claude
+
 - One issue per session; `/clear` between tasks.
 - Long task: save progress to the plan/STATUS, then start a fresh session instead of compacting.
 - Exploration and review run in subagents.
@@ -792,20 +850,25 @@ _Updated at the end of every working session and when a PR merges. Keep under 60
 **Milestone:** M0 — walking skeleton + guardrails (`docs/plans/M0-walking-skeleton.md`)
 
 ## In progress
+
 - Task 5: dev log, status, ADRs, PDLC, PR checks
 
 ## Next up
+
 - Task 6: CI workflow
 - Task 7: Claude guardrails (settings + hooks)
 
 ## Waiting on Andrew
+
 - Branch-protection decision (GitHub Free doesn't enforce it on private repos)
 - Cloudflare Pages connection (dashboard step)
 
 ## Known issues / risks
+
 - None yet
 
 ## Recently done
+
 - Tasks 1–4: repo, scaffold, lint + e2e, test-integrity gate
 ```
 
@@ -827,21 +890,25 @@ Retro lines are consolidated into PDLC.md every 5 PRs; mark consolidated entries
 -->
 
 ## 2026-11-08 — Design phase complete (no PR)
+
 **Changed:** Topic-by-topic decisions, iteration 1 spec, roadmap, M0 plan, learning PDFs.
 **Notes:** Spec at docs/specs/2026-11-08-iteration-1-design.md. Signed-out mode is defaults only; one active device with handoff.
 **Retro:** worked: one decision per message, with visuals / slowed us: no sources in the first PDFs / change: cite sources and label evidence strength.
 
 ## 2026-11-08 — Repo + scaffold (Tasks 1–2, bootstrap on main)
+
 **Changed:** Private GitHub repo; Vite React PWA with a tested hello screen.
 **Notes:** Node 24 pinned in .nvmrc (nvm default on this machine is 18).
 **Retro:** _fill in_
 
 ## 2026-11-08 — Lint + e2e smoke (Task 3, #PR)
+
 **Changed:** Lint rules that fail on skipped/focused/assertion-less tests; Prettier; Playwright smoke test.
 **Notes:**
 **Retro:**
 
 ## 2026-11-08 — Test-integrity gate (Task 4, #PR)
+
 **Changed:** scripts/test-integrity.ts blocks weakened tests unless labeled.
 **Notes:** Regex-based heuristic; Stryker (M1) and review cover what it misses.
 **Retro:**
@@ -930,12 +997,12 @@ The engineer fills in the `#PR` numbers and empty Notes/Retro lines with Andrew 
 
 Each document builds on the earlier ones and doesn't repeat them. Read top to bottom; tick off as you go.
 
-| # | Document | Depth | Time | Status |
-|---|---|---|---|---|
-| 1 | `ux-primer.pdf` | Overview of UX principles and authorities | 30 min | Read 2026-11-08 |
-| 2 | `ux-heuristics-and-laws.pdf` | Deep dive: Nielsen's heuristics and the laws of UX | ~45 min | |
-| 3 | `usability-fundamentals.pdf` | How people use interfaces; writing, forms, testing | ~60 min | |
-| 4 | `dev-process-primer.pdf` | Process, testing, and AI-assisted development evidence | ~25 min | |
+| #   | Document                     | Depth                                                  | Time    | Status          |
+| --- | ---------------------------- | ------------------------------------------------------ | ------- | --------------- |
+| 1   | `ux-primer.pdf`              | Overview of UX principles and authorities              | 30 min  | Read 2026-11-08 |
+| 2   | `ux-heuristics-and-laws.pdf` | Deep dive: Nielsen's heuristics and the laws of UX     | ~45 min |                 |
+| 3   | `usability-fundamentals.pdf` | How people use interfaces; writing, forms, testing     | ~60 min |                 |
+| 4   | `dev-process-primer.pdf`     | Process, testing, and AI-assisted development evidence | ~25 min |                 |
 
 Concepts we actually apply are tracked in `CONCEPTS.md`.
 ```
@@ -948,18 +1015,18 @@ Concepts we actually apply are tracked in `CONCEPTS.md`.
 Every concept from the learning docs that shapes a real decision. Opinionated applications are agreed with Andrew first.
 Status: applied · considered · rejected.
 
-| Concept | Source doc | Evidence | Where applied | Status |
-|---|---|---|---|---|
-| WCAG 2.2 AA as top UI authority | ux-primer | Strong (standard) | ADR 0005; spec §4 | applied |
-| Apple HIG as platform authority | ux-primer | Heuristic (platform guideline) | ADR 0005; spec §4 | applied |
-| Progressive disclosure (settings behind one icon) | ux-primer | Heuristic | spec §4 | applied |
-| One primary action (Hick-Hyman, Fitts) | ux-primer | Moderate / Strong | spec §4 | applied |
-| Use of color is not the only signal (WCAG 1.4.1) | ux-primer | Strong (standard) | spec §4 | applied |
-| Walking skeleton | dev-process-primer | Heuristic | M0 | applied |
-| Small batches, PR size warning | dev-process-primer | Strong / Moderate | M0 pr-checks | applied |
-| Mutation testing over coverage % | dev-process-primer | Strong | M1 Stryker gate | considered |
-| ADRs | dev-process-primer | Heuristic | docs/decisions | applied |
-| Context engineering (short always-loaded context) | dev-process-primer | Heuristic | AGENTS.md, hooks | applied |
+| Concept                                           | Source doc         | Evidence                       | Where applied     | Status     |
+| ------------------------------------------------- | ------------------ | ------------------------------ | ----------------- | ---------- |
+| WCAG 2.2 AA as top UI authority                   | ux-primer          | Strong (standard)              | ADR 0005; spec §4 | applied    |
+| Apple HIG as platform authority                   | ux-primer          | Heuristic (platform guideline) | ADR 0005; spec §4 | applied    |
+| Progressive disclosure (settings behind one icon) | ux-primer          | Heuristic                      | spec §4           | applied    |
+| One primary action (Hick-Hyman, Fitts)            | ux-primer          | Moderate / Strong              | spec §4           | applied    |
+| Use of color is not the only signal (WCAG 1.4.1)  | ux-primer          | Strong (standard)              | spec §4           | applied    |
+| Walking skeleton                                  | dev-process-primer | Heuristic                      | M0                | applied    |
+| Small batches, PR size warning                    | dev-process-primer | Strong / Moderate              | M0 pr-checks      | applied    |
+| Mutation testing over coverage %                  | dev-process-primer | Strong                         | M1 Stryker gate   | considered |
+| ADRs                                              | dev-process-primer | Heuristic                      | docs/decisions    | applied    |
+| Context engineering (short always-loaded context) | dev-process-primer | Heuristic                      | AGENTS.md, hooks  | applied    |
 ```
 
 - [ ] **Step 9: PR template**
@@ -972,11 +1039,13 @@ Closes #
 ## What changed
 
 ## How it was tested
+
 - [ ] Test-only commits come first and failed before the implementation
 - [ ] No existing test was weakened (or `test-change-approved` was requested with a reason below)
 - [ ] Checked on the preview deploy (UI changes)
 
 ## Log
+
 - [ ] Entry added to `docs/log/<YYYY-MM>.md` (or `no-log` label for trivial changes)
 - [ ] `docs/STATUS.md` updated
 ```
@@ -1000,6 +1069,7 @@ gh pr create --fill
 Issue: "M0: GitHub Actions CI with all gates". Branch: `m0/6-ci`.
 
 **Files:**
+
 - Create: `.github/workflows/ci.yml`
 
 - [ ] **Step 1: Write the workflow**
@@ -1121,6 +1191,7 @@ git switch m0/6-ci
 Issue: "M0: Claude Code permissions, hooks, plugin allowlist". Branch: `m0/7-claude-guardrails`.
 
 **Files:**
+
 - Create: `.claude/hooks/lib.ts`, `.claude/hooks/guard-bash.ts`, `.claude/hooks/guard-bash.test.ts`, `.claude/hooks/guard-tests.ts`, `.claude/hooks/guard-tests.test.ts`, `.claude/hooks/post-edit-lint.ts`, `.claude/hooks/stop-verify.ts`, `.claude/hooks/session-start.ts`, `.claude/settings.json`
 
 Hook contract (Claude Code docs, "Hooks reference"): the hook receives JSON on stdin (`tool_name`, `tool_input`, …). Exit code 2 blocks the action and shows stderr to Claude. For PreToolUse, printing `{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask","permissionDecisionReason":"…"}}` asks Andrew instead. SessionStart stdout is added to Claude's context. Stop hooks get `stop_hook_active` and must not block when it's true, to avoid loops.
@@ -1171,7 +1242,13 @@ describe('evaluateCommand', () => {
     expect(evaluateCommand('git push', 'main').block).toBe(true);
   });
 
-  const allowed = ['git push -u origin m0/1-x', 'git push --force-with-lease', 'npm test', 'cat .env.example', 'git status'];
+  const allowed = [
+    'git push -u origin m0/1-x',
+    'git push --force-with-lease',
+    'npm test',
+    'cat .env.example',
+    'git status',
+  ];
   for (const cmd of allowed) {
     it(`allows: ${cmd}`, () => {
       expect(evaluateCommand(cmd, 'm0/1-x').block).toBe(false);
@@ -1203,15 +1280,24 @@ import { isMain, readInput } from './lib.ts';
 
 const RULES: [RegExp, string][] = [
   [/\bgit\s+push\b[^;&|]*\b(main|master)\b/, 'pushing to main is blocked; open a PR'],
-  [/\bgit\s+push\b[^;&|]*(--force(?!-with-lease)|\s-f\b)/, 'force push is blocked; use --force-with-lease on your own branch'],
+  [
+    /\bgit\s+push\b[^;&|]*(--force(?!-with-lease)|\s-f\b)/,
+    'force push is blocked; use --force-with-lease on your own branch',
+  ],
   [/\bgit\s+reset\s+--hard\b/, 'git reset --hard discards work; ask Andrew'],
   [/\bgit\s+clean\s+-\w*f/, 'git clean -f deletes untracked files; ask Andrew'],
   [/\bgit\s+branch\s+-D\b/, 'git branch -D force-deletes a branch; ask Andrew'],
   [/\brm\s+-\w*(rf|fr)\w*\b/, 'rm -rf is blocked; delete specific files instead'],
-  [/\.env(?!\.example)(\.\w+)?\b/, 'reading .env files is blocked; secrets stay out of the conversation'],
+  [
+    /\.env(?!\.example)(\.\w+)?\b/,
+    'reading .env files is blocked; secrets stay out of the conversation',
+  ],
 ];
 
-export function evaluateCommand(command: string, branch: string): { block: boolean; reason?: string } {
+export function evaluateCommand(
+  command: string,
+  branch: string,
+): { block: boolean; reason?: string } {
   for (const [re, reason] of RULES) if (re.test(command)) return { block: true, reason };
   if (branch === 'main' && /\bgit\s+push\s*($|[;&|])/.test(command)) {
     return { block: true, reason: 'pushing while on main is blocked; switch to a feature branch' };
@@ -1326,8 +1412,10 @@ if (isMain(import.meta.url)) {
   if (input.stop_hook_active) process.exit(0);
 
   const git = (args: string[]) => execFileSync('git', args, { encoding: 'utf8' });
-  const changed = [...git(['diff', '--name-only', 'HEAD']).split('\n'), ...git(['ls-files', '--others', '--exclude-standard']).split('\n')]
-    .filter((f) => /\.(ts|tsx)$/.test(f));
+  const changed = [
+    ...git(['diff', '--name-only', 'HEAD']).split('\n'),
+    ...git(['ls-files', '--others', '--exclude-standard']).split('\n'),
+  ].filter((f) => /\.(ts|tsx)$/.test(f));
   if (changed.length === 0) process.exit(0);
 
   const typecheck = spawnSync('npm', ['run', 'typecheck', '--silent'], { encoding: 'utf8' });
@@ -1406,26 +1494,55 @@ In `.claude/settings.json` (next step), `enabledPlugins` lists every one of thos
   },
   "hooks": {
     "SessionStart": [
-      { "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.ts\"" }] }
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.ts\""
+          }
+        ]
+      }
     ],
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-bash.ts\"" }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-bash.ts\""
+          }
+        ]
       },
       {
         "matcher": "Edit|MultiEdit|Write",
-        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-tests.ts\"" }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-tests.ts\""
+          }
+        ]
       }
     ],
     "PostToolUse": [
       {
         "matcher": "Edit|MultiEdit|Write",
-        "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit-lint.ts\"" }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit-lint.ts\""
+          }
+        ]
       }
     ],
     "Stop": [
-      { "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-verify.ts\"" }] }
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-verify.ts\""
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {}
@@ -1467,6 +1584,7 @@ gh pr create --fill
 Issue: "M0: AGENTS.md, CLAUDE.md, Husky pre-commit". Branch: `m0/8-agents-precommit`.
 
 **Files:**
+
 - Create: `AGENTS.md`, `CLAUDE.md`, `.husky/pre-commit`
 - Modify: `package.json` (lint-staged, prepare)
 
@@ -1478,15 +1596,18 @@ Issue: "M0: AGENTS.md, CLAUDE.md, Husky pre-commit". Branch: `m0/8-agents-precom
 A personal Pomodoro PWA (React + Vite + TypeScript; Supabase from M2; Cloudflare Pages).
 
 ## Start of every session
+
 1. Read `docs/STATUS.md` (current state) and `docs/process/PDLC.md` (how we work).
 2. Work on exactly one issue. Its plan is in `docs/plans/`.
 3. Use Node 24: `source ~/.nvm/nvm.sh && nvm use`.
 
 ## Commands
+
 - `npm run dev` — dev server · `npm test` — unit/component tests · `npm run test:e2e` — Playwright
 - `npm run typecheck` · `npm run lint` · `npm run format`
 
 ## Rules
+
 - TDD: write a failing test, see it fail, then implement. Test-only commits first in each PR.
 - Never weaken a test (skip, delete, loosen, or update snapshots) to make code pass. Fix the code or stop and ask Andrew.
 - Keep files small and single-purpose. The timer engine (`src/engine/`, from M1) stays pure TypeScript: no React, no I/O, time passed in.
@@ -1498,6 +1619,7 @@ A personal Pomodoro PWA (React + Vite + TypeScript; Supabase from M2; Cloudflare
 - Secrets never go in the repo or the conversation. Don't read `.env*` files. The repo is public.
 
 ## Where things live
+
 - Spec: `docs/specs/` · Plans: `docs/plans/` · Decisions: `docs/decisions/` · Log: `docs/log/`
 - CI gates: `.github/workflows/ci.yml`, `scripts/` · Claude hooks: `.claude/hooks/`
 ```
@@ -1577,11 +1699,11 @@ Issue: "M0: branch protection and AI review".
 
 **Decided 2026-11-08: option B (repo is public), so apply Step 1 with `gh api`.** Background: GitHub Free does not enforce branch protection or rulesets on private repositories (GitHub docs, "About protected branches"). Options:
 
-| Option | Cost | Effect |
-|---|---|---|
-| A. GitHub Pro | $4/month | Real enforcement: required checks, no direct pushes to `main` |
-| B. Make the repo public | Free | Real enforcement, but the code is visible |
-| C. Stay on Free | Free | No server-side enforcement; rely on Claude's guard hook + deny rules, plus a local `pre-push` hook. Andrew can still bypass by accident |
+| Option                  | Cost     | Effect                                                                                                                                  |
+| ----------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| A. GitHub Pro           | $4/month | Real enforcement: required checks, no direct pushes to `main`                                                                           |
+| B. Make the repo public | Free     | Real enforcement, but the code is visible                                                                                               |
+| C. Stay on Free         | Free     | No server-side enforcement; rely on Claude's guard hook + deny rules, plus a local `pre-push` hook. Andrew can still bypass by accident |
 
 - [ ] **Step 1: Apply protection** (options A or B)
 
