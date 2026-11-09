@@ -9,6 +9,7 @@
 A personal Pomodoro timer, installable as a PWA on iPhone and Mac, with no Apple developer fee. The timer works signed out using the standard defaults. Signing in unlocks custom durations, notifications, and handing the running timer between devices.
 
 **In scope**
+
 - Pomodoro cycle: focus blocks, short breaks, long breaks, all with configurable durations (signed in).
 - Signed-out mode using defaults only.
 - Sign in with an email 6-digit code or Google; optional TOTP 2FA with a backup authenticator.
@@ -20,6 +21,7 @@ A personal Pomodoro timer, installable as a PWA on iPhone and Mac, with no Apple
 - Floating mini timer on Chromium desktop (Document Picture-in-Picture).
 
 **Out of scope (later iterations)**
+
 - Task lists and physical-activity tasks (iteration 2); camera accountability; AI task planning; Claude integration.
 - Stats and history, streaks, custom sounds, themes.
 - Capacitor native wrapper (would add native local notifications and Live Activities).
@@ -27,13 +29,13 @@ A personal Pomodoro timer, installable as a PWA on iPhone and Mac, with no Apple
 
 ## 2. Success criteria
 
-| Criterion | Target | How it's measured |
-|---|---|---|
-| Push timeliness | p95 delivery within ±2 s of block end | Server `sent_at` and service-worker `received_at` vs `fire_at` (see §6) |
-| Timer correctness | Display correct immediately after resume, wake, or reopen | Engine derives remaining time from timestamps; property tests |
-| Offline | Full timer control with no network | Playwright offline e2e |
-| Accessibility | WCAG 2.2 AA | axe in component and e2e tests; manual keyboard and VoiceOver check |
-| Performance | LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.1 on iPhone | Lighthouse on preview deploys |
+| Criterion         | Target                                                    | How it's measured                                                       |
+| ----------------- | --------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Push timeliness   | p95 delivery within ±2 s of block end                     | Server `sent_at` and service-worker `received_at` vs `fire_at` (see §6) |
+| Timer correctness | Display correct immediately after resume, wake, or reopen | Engine derives remaining time from timestamps; property tests           |
+| Offline           | Full timer control with no network                        | Playwright offline e2e                                                  |
+| Accessibility     | WCAG 2.2 AA                                               | axe in component and e2e tests; manual keyboard and VoiceOver check     |
+| Performance       | LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.1 on iPhone            | Lighthouse on preview deploys                                           |
 
 ## 3. Functional requirements
 
@@ -63,17 +65,17 @@ A personal Pomodoro timer, installable as a PWA on iPhone and Mac, with no Apple
 
 ### 3.4 Settings (signed in only)
 
-| Setting | Range | Default |
-|---|---|---|
-| Focus length | 1–90 min | 25 |
-| Short break | 1–30 min | 5 |
-| Long break | 5–60 min | 15 |
-| Long break every | 2–8 focus blocks | 4 |
-| Auto-start breaks | on/off | on |
-| Auto-start focus | on/off | off |
-| Sound | on/off | on |
-| Keep screen on while running | on/off | off |
-| Notifications on this device | on/off (requests permission) | off |
+| Setting                      | Range                        | Default |
+| ---------------------------- | ---------------------------- | ------- |
+| Focus length                 | 1–90 min                     | 25      |
+| Short break                  | 1–30 min                     | 5       |
+| Long break                   | 5–60 min                     | 15      |
+| Long break every             | 2–8 focus blocks             | 4       |
+| Auto-start breaks            | on/off                       | on      |
+| Auto-start focus             | on/off                       | off     |
+| Sound                        | on/off                       | on      |
+| Keep screen on while running | on/off                       | off     |
+| Notifications on this device | on/off (requests permission) | off     |
 
 - Durations are changed with steppers, not free-typed numbers.
 - Stored server-side, one row per user, last write wins by `updated_at`.
@@ -131,14 +133,14 @@ Principles are in `docs/learning/ux-primer.pdf`. The binding rules are:
 
 **Client (React + Vite + TypeScript + vite-plugin-pwa)**
 
-| Unit | Responsibility | Depends on |
-|---|---|---|
-| `engine/` | Pure TS state machine: state, actions, derived remaining time, block plan. No React, no I/O. Time is passed in. | nothing |
-| `store/` | Thin Zustand store wrapping the engine; persists timer state locally | engine |
-| `sync/` | Device registration, handoff, offline queue, reconciliation (pure merge function + Realtime adapter) | engine, Supabase client |
-| `push/` | `schedulePush` / `cancelPush` interface; Supabase implementation | Supabase client |
-| `ui/` | Screens and components | store |
-| `sw/` | Service worker: offline caching, push display, receipt telemetry | — |
+| Unit      | Responsibility                                                                                                  | Depends on              |
+| --------- | --------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| `engine/` | Pure TS state machine: state, actions, derived remaining time, block plan. No React, no I/O. Time is passed in. | nothing                 |
+| `store/`  | Thin Zustand store wrapping the engine; persists timer state locally                                            | engine                  |
+| `sync/`   | Device registration, handoff, offline queue, reconciliation (pure merge function + Realtime adapter)            | engine, Supabase client |
+| `push/`   | `schedulePush` / `cancelPush` interface; Supabase implementation                                                | Supabase client         |
+| `ui/`     | Screens and components                                                                                          | store                   |
+| `sw/`     | Service worker: offline caching, push display, receipt telemetry                                                | —                       |
 
 **Engine interface (sketch)**
 
@@ -179,11 +181,11 @@ plan(state, settings, now): { mode: Mode; endsAt: number }[]   // upcoming block
 
 All tables have RLS enabled with policies limiting every row to `user_id = auth.uid()`.
 
-| Table | Columns | Notes |
-|---|---|---|
-| `settings` | `user_id` PK, `focus_min`, `short_break_min`, `long_break_min`, `long_break_every`, `auto_start_breaks`, `auto_start_focus`, `sound`, `keep_awake`, `updated_at` | Created on first sign-in with defaults |
-| `devices` | `id` PK, `user_id`, `label`, `platform`, `push_endpoint`, `push_p256dh`, `push_auth`, `last_seen_at`, `created_at` | Push fields are null if notifications are off on that device |
-| `active_cycle` | `user_id` PK, `active_device_id`, `status`, `mode`, `focus_index`, `ends_at`, `remaining_ms`, `version`, `updated_at` | One row per user; Realtime-enabled |
+| Table              | Columns                                                                                                                                                          | Notes                                                                   |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `settings`         | `user_id` PK, `focus_min`, `short_break_min`, `long_break_min`, `long_break_every`, `auto_start_breaks`, `auto_start_focus`, `sound`, `keep_awake`, `updated_at` | Created on first sign-in with defaults                                  |
+| `devices`          | `id` PK, `user_id`, `label`, `platform`, `push_endpoint`, `push_p256dh`, `push_auth`, `last_seen_at`, `created_at`                                               | Push fields are null if notifications are off on that device            |
+| `active_cycle`     | `user_id` PK, `active_device_id`, `status`, `mode`, `focus_index`, `ends_at`, `remaining_ms`, `version`, `updated_at`                                            | One row per user; Realtime-enabled                                      |
 | `scheduled_pushes` | `id` PK, `user_id`, `device_id`, `cycle_version`, `fire_at`, `kind`, `title`, `body`, `status` (pending/sent/cancelled/expired/failed), `sent_at`, `received_at` | `received_at` is reported by the service worker for latency measurement |
 
 - Writes to `active_cycle` include the expected `version`; a mismatch means another device changed it first, and the client reloads state.
@@ -191,34 +193,34 @@ All tables have RLS enabled with policies limiting every row to `user_id = auth.
 
 ## 7. Edge cases
 
-| Situation | Behavior |
-|---|---|
-| Two devices act at once | Optimistic concurrency on `version`; the first write wins, the second reloads |
-| Device clocks differ | Server time is authoritative; clients correct by measured offset |
-| Offline actions | Local control; sync on reconnect; takeover-while-offline wins (§3.7) |
-| Supabase down or paused | Timer keeps working locally; "Not synced" indicator |
-| Scheduler late | Pushes > 60 s past `fire_at` are expired, not sent |
-| Duplicate local + push notification | Shared `tag` dedupes |
-| Stale push subscription | `404`/`410` from push service deletes it |
-| Notifications denied | In-app alerts only; Settings explains how to enable |
-| Settings changed mid-block | Applies next block; pushes rescheduled |
-| Mac sleeps or tab hidden | On `visibilitychange`, `advance()` recomputes from timestamps |
-| Wrong or expired code | "That code didn't work. Send a new one." 60 s resend cooldown |
-| Lost 2FA device | Backup authenticator; otherwise manual reset in Supabase dashboard |
-| Sign out | Device's push subscription and device row removed |
+| Situation                           | Behavior                                                                      |
+| ----------------------------------- | ----------------------------------------------------------------------------- |
+| Two devices act at once             | Optimistic concurrency on `version`; the first write wins, the second reloads |
+| Device clocks differ                | Server time is authoritative; clients correct by measured offset              |
+| Offline actions                     | Local control; sync on reconnect; takeover-while-offline wins (§3.7)          |
+| Supabase down or paused             | Timer keeps working locally; "Not synced" indicator                           |
+| Scheduler late                      | Pushes > 60 s past `fire_at` are expired, not sent                            |
+| Duplicate local + push notification | Shared `tag` dedupes                                                          |
+| Stale push subscription             | `404`/`410` from push service deletes it                                      |
+| Notifications denied                | In-app alerts only; Settings explains how to enable                           |
+| Settings changed mid-block          | Applies next block; pushes rescheduled                                        |
+| Mac sleeps or tab hidden            | On `visibilitychange`, `advance()` recomputes from timestamps                 |
+| Wrong or expired code               | "That code didn't work. Send a new one." 60 s resend cooldown                 |
+| Lost 2FA device                     | Backup authenticator; otherwise manual reset in Supabase dashboard            |
+| Sign out                            | Device's push subscription and device row removed                             |
 
 ## 8. Testing strategy
 
-| Layer | Scope | Tools |
-|---|---|---|
-| Static | Types, lint (incl. no `.skip`/`.only`) | TypeScript, ESLint + Vitest plugin |
-| Engine | All transitions, wraparound, mid-block settings changes, `advance` after long gaps | Vitest, TDD with injected time, fast-check property tests, **Stryker mutation gate** |
-| Sync | Takeover, offline/reconnect, takeover-while-offline, version conflicts | Vitest on the pure merge function |
-| Database | RLS isolation between users; `schedule_cycle` atomicity; expiry rule | Local Supabase in Docker, run in CI |
-| Components | Visible behavior; accessibility | Testing Library, axe |
-| End-to-end (Chromium) | Signed-out cycle; email-code sign-in; two-context handoff; offline | Playwright with fake clock; local Supabase mail capture |
-| Push | Sender, expiry, always-show rule in the service worker | Vitest with a mocked push service |
-| Real device (manual) | Installed iPhone PWA; Mac mini timer; push latency | Checklist on preview deploys; p50/p95 latency query |
+| Layer                 | Scope                                                                              | Tools                                                                                |
+| --------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Static                | Types, lint (incl. no `.skip`/`.only`)                                             | TypeScript, ESLint + Vitest plugin                                                   |
+| Engine                | All transitions, wraparound, mid-block settings changes, `advance` after long gaps | Vitest, TDD with injected time, fast-check property tests, **Stryker mutation gate** |
+| Sync                  | Takeover, offline/reconnect, takeover-while-offline, version conflicts             | Vitest on the pure merge function                                                    |
+| Database              | RLS isolation between users; `schedule_cycle` atomicity; expiry rule               | Local Supabase in Docker, run in CI                                                  |
+| Components            | Visible behavior; accessibility                                                    | Testing Library, axe                                                                 |
+| End-to-end (Chromium) | Signed-out cycle; email-code sign-in; two-context handoff; offline                 | Playwright with fake clock; local Supabase mail capture                              |
+| Push                  | Sender, expiry, always-show rule in the service worker                             | Vitest with a mocked push service                                                    |
+| Real device (manual)  | Installed iPhone PWA; Mac mini timer; push latency                                 | Checklist on preview deploys; p50/p95 latency query                                  |
 
 Tests follow the no-test-weakening policy: changes to existing tests require the `test-change-approved` label (§9).
 
@@ -234,10 +236,10 @@ The working process lives in `docs/process/PDLC.md` (80-line cap). Gates for eve
 
 ## 10. Risks and spikes (before or during the first issues)
 
-| Risk | Spike | If it fails |
-|---|---|---|
-| Google sign-in redirect may land in Safari instead of the installed iOS PWA | Throwaway test on Andrew's iPhone | Ship email code only; revisit Google later |
-| Document PiP may be disabled in Brave | Open a PiP window in Brave | Mini timer is Chrome-only; note it in the UI |
-| Per-second `pg_cron` on the free tier may be unreliable or costly | Run the scheduler for a day, measure | Switch to Cloudflare Durable Object alarms |
-| Push latency may miss ±2 s | Latency telemetry from day one | Same fallback as above |
-| Free Supabase project pauses after 7 days idle | — | Daily use prevents it; accept |
+| Risk                                                                        | Spike                                | If it fails                                  |
+| --------------------------------------------------------------------------- | ------------------------------------ | -------------------------------------------- |
+| Google sign-in redirect may land in Safari instead of the installed iOS PWA | Throwaway test on Andrew's iPhone    | Ship email code only; revisit Google later   |
+| Document PiP may be disabled in Brave                                       | Open a PiP window in Brave           | Mini timer is Chrome-only; note it in the UI |
+| Per-second `pg_cron` on the free tier may be unreliable or costly           | Run the scheduler for a day, measure | Switch to Cloudflare Durable Object alarms   |
+| Push latency may miss ±2 s                                                  | Latency telemetry from day one       | Same fallback as above                       |
+| Free Supabase project pauses after 7 days idle                              | —                                    | Daily use prevents it; accept                |
