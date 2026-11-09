@@ -18,7 +18,8 @@
       "Bash(gh pr list:*)",
       "Bash(gh pr checks:*)",
       "Bash(gh issue view:*)",
-      "Bash(gh issue list:*)"
+      "Bash(gh issue list:*)",
+      "Read(./.env.example)"
     ],
     "deny": [
       "Read(./.env)",
@@ -26,7 +27,8 @@
       "Bash(git push --force:*)",
       "Bash(git push origin main:*)",
       "Bash(git reset --hard:*)",
-      "Bash(rm -rf:*)"
+      "Bash(rm -rf:*)",
+      "Bash(gh pr merge:*)"
     ]
   },
   "hooks": {
@@ -35,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.ts\""
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/run.sh\" session-start soft"
           }
         ]
       }
@@ -46,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-bash.ts\""
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/run.sh\" guard-bash guard"
           }
         ]
       },
@@ -55,7 +57,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-tests.ts\""
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/run.sh\" guard-tests guard"
           }
         ]
       }
@@ -66,7 +68,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-edit-lint.ts\""
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/run.sh\" post-edit-lint soft"
           }
         ]
       }
@@ -76,7 +78,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-verify.ts\""
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/run.sh\" stop-verify soft",
+            "timeout": 120
           }
         ]
       }

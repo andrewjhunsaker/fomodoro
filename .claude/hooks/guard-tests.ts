@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs';
-import { relative } from 'node:path';
+import { relative, resolve } from 'node:path';
 import { isTestFile } from '../../scripts/test-integrity.ts';
 import { projectDir, readInput } from './lib.ts';
 
@@ -15,6 +15,7 @@ export function decide(filePath: string, exists: boolean) {
 if (import.meta.main) {
   const input = await readInput<{ tool_input?: { file_path?: string } }>();
   const filePath = input.tool_input?.file_path ?? '';
-  const output = decide(relative(projectDir(), filePath), existsSync(filePath));
+  const abs = resolve(projectDir(), filePath);
+  const output = decide(relative(projectDir(), abs), existsSync(abs));
   if (output) console.log(JSON.stringify({ hookSpecificOutput: output }));
 }
